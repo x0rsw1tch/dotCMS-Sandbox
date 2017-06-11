@@ -1,0 +1,30 @@
+## Pre-processing scripting
+#parse("preprocess.vl")
+#parseContainer('26fcd9d9-6db7-405f-b96c-8d28546efefb')
+<!doctype html>
+<html class="no-js" lang="en">
+#if($dotTheme.htmlHead)
+#dotParse("${dotTheme.path}html_head.vtl")
+#end
+<body>
+<!-- Start Header -->
+#if($dotThemeLayout.header)
+#dotParse("${dotTheme.path}header.vtl")
+#end
+<!-- End Header -->
+
+<!-- Start Main -->
+#dotParse("${dotTheme.path}body.vtl")
+<!-- End Main -->
+
+<!-- Start Footer -->
+#if($dotThemeLayout.footer)
+#dotParse("${dotTheme.path}footer.vtl")
+#end
+<!-- End Footer  -->
+</body>
+<!-- Start Footer -->
+#dotParse("${dotTheme.path}bottom.vtl")
+<!-- End Footer  -->
+</html>
+#parse("postprocess.vl")

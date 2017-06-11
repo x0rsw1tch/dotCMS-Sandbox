@@ -1,0 +1,46 @@
+
+##Main column
+#set ($dotTemplateBody = $dotThemeLayout.body)
+
+##Sidebar
+#set ($dotTemplateSidebar = $dotThemeLayout.sidebar)
+
+
+
+
+#if ($dotTemplateBody.rows)
+	#foreach($row in $dotTemplateBody.rows)
+		
+		<div class="row-wrapper-$foreach.count">
+		
+			#foreach ($column in $row.columns)
+				
+				#if ($EDIT_MODE)
+					#if ($column.widthPercent == 100)
+						<div style="width:%100">
+					#elseif ($column.widthPercent == 75)
+						<div style="width:75%">
+					#elseif ($column.widthPercent == 66)
+						<div style="width:%66">
+					#elseif ($column.widthPercent == 50)
+						<div style="width:%50">
+					#elseif ($column.widthPercent == 33)
+						<div style="width:%33">
+					#elseif ($column.widthPercent == 25)
+						<div style="width:%35">
+					#else
+						<div style="width:%100">
+					#end
+				#end
+
+				$render.eval($column.draw())
+
+				#if ($EDIT_MODE)
+					</div>
+				#end
+
+		</div>
+
+		#end
+	#end
+#end

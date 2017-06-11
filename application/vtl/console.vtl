@@ -1,0 +1,97 @@
+#if ($EDIT_MODE) <h2>Velocity Console</h2> #end
+
+<style type="text/css">
+div.output-section{margin-bottom:3rem}div.output-section h3{display:inline}div.output-section h3 #response-time{font-size:16px;margin-left:1rem;vertical-align:middle}div.output-section [class^=console-output]{background-color:#111;padding-bottom:1rem;border:1px solid #444}div.console-input{margin-bottom:1rem}a.console-btn{margin-left:1rem;cursor:pointer;border:2px solid #555;padding:4px 14px;background-color:#111;color:#6a6a6a;border-radius:16px}a.console-btn:hover{color:#6f6f6f;background-color:#222;border:2px solid #666;transition:.5s all ease-in-out}a.console-btn:active{color:#fff;background-color:#ccc;border:2px solid #eee;transition:.1s all ease-in-out}div.console-input textarea{background-color:#111;color:#ccc;border-color:#333;min-height:12rem;width:99.5%;margin:1rem auto;font-size:1.2rem}div.helpful-area{display:flex}div.helpful-area>div{width:48%;max-width:48%;overflow:auto;padding:0 1rem}div.helpful-area h1{font-size:1.5rem}div.helpful-area h3{font-size:1.25rem}div.helpful-area #snippet-markdown hr{border:none;margin-bottom:2rem}.clearfix{clear:both}.clearfix:after{content:"";display:table;clear:both}.hide{display:none!important}.spinner,.spinner:after{border-radius:50%;width:16px;height:16px;display:inline-block}.spinner{font-size:7px;position:relative;text-indent:-9999em;border-top:.9em solid rgba(255,255,255,.2);border-right:.9em solid rgba(255,255,255,.2);border-bottom:.9em solid rgba(255,255,255,.2);border-left:.9em solid #fff;transform:translateZ(0);animation:load8 .9s infinite linear}@keyframes load8{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+</style>
+<h1 style="text-align:center;">Velocity Console</h1>
+<div class="output-section">
+	<div class="clearfix">
+		<h3>Console Output
+			<span id="response-time">Response Time: Nothing Yet</span>
+			<div class="spinner hide"></div>
+		</h3>
+	</div>
+	<pre class="console-output-pre hide"></pre>
+	<div class="console-output-div hide"></div>
+</div>
+<div class="console-input">
+	Output Format:
+	<label><input type="radio" name="output-format" value="preformatted" checked="checked">Preformatted</label>
+	<label><input type="radio" name="output-format" value="html">HTML</label>
+	<label><input type="radio" name="output-format" value="htmlnovtl">HTML-novtl</label>
+	<a class="console-btn" onclick="submitRequest()">Submit</a>
+	<br>
+	<textarea placeholder="Write some Velocity!" id="console-input" onkeyup="doLiveUpdate()"></textarea>
+</div>
+<div class="helpful-area">
+	<div class="console-history">
+		<h1>History</h1>
+		<div id="history"></div>
+	</div>
+	<div class="console-snippets">
+		<div id="snippet-markdown"></div>
+	</div>
+</div>
+<script>
+var benchmarkStart, benchmarkFinish;
+function showSpinner () {
+	$('div.spinner').removeClass('hide');
+}
+function hideSpinner () {
+	$('div.spinner').addClass('hide');
+}
+function showBenchmarkTime () {
+	$('#response-time').html('Response Time:&nbsp;'+(benchmarkFinish - benchmarkStart) + 'ms');
+}
+function updateHistory (lastInput) {
+	$('#history').append('<pre>'+lastInput+'</pre><hr>');
+}
+function doLiveUpdate () {
+	if ($('input[name="output-format"]:checked').val() == 'htmlnovtl') {
+		$('.console-output-pre').addClass('hide');
+		$('.console-output-div').removeClass('hide');
+		$('.console-output-div').html(document.getElementById('console-input').value);
+	}
+}
+function submitRequest () {
+	benchmarkStart = Date.now();
+	showSpinner();
+	var consoleInput = document.getElementById('console-input').value;
+	updateHistory(consoleInput);
+	$.ajax({
+		url: 'vtl',
+		data: { 'q': 'vtlConsole', 's': consoleInput },
+		method: 'POST',
+		success: function (data) {
+			if ($('input[name="output-format"]:checked').val() == 'preformatted') {
+				$('.console-output-pre').removeClass('hide');
+				$('.console-output-div').addClass('hide');
+				$('.console-output-pre').text(data);
+			} else if ($('input[name="output-format"]:checked').val() == 'html') {
+				$('.console-output-pre').addClass('hide');
+				$('.console-output-div').removeClass('hide');
+				$('.console-output-div').html(data);
+			}
+		},
+		complete: function () {
+			hideSpinner();
+			benchmarkFinish = Date.now();
+			showBenchmarkTime();
+		}
+	});
+}
+window.onload = function () {
+	var converter = new showdown.Converter();
+	$('#snippet-markdown').html(converter.makeHtml($('#markdown').text()));
+	$('#console-input').keydown(function(e) {
+  		var keyCode = e.keyCode || e.which;
+		if (keyCode == 9) {
+    		e.preventDefault();
+    		var v=this.value,s=this.selectionStart,e=this.selectionEnd;this.value=v.substring(0, s)+'\t'+v.substring(e);this.selectionStart=this.selectionEnd=s+1;return false;
+  		}
+	});
+}
+</script>
+<div style="display:none;" id="markdown">
+$esc.html($import.read('https://raw.githubusercontent.com/x0rsw1tch/DotCMSVelocity/master/velocity-snippets.md'))
+</div>
